@@ -1,0 +1,856 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>World Models Research Radar</title>
+<style>
+/* ===== Reset & Base ===== */
+*, *::before, *::after {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+body {
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+  background: #0a0a0f;
+  color: #e0e0e8;
+  line-height: 1.6;
+  min-height: 100vh;
+}
+
+a {
+  color: #4a9eff;
+  text-decoration: none;
+}
+a:hover {
+  text-decoration: underline;
+}
+
+/* ===== Header ===== */
+.header {
+  text-align: center;
+  padding: 48px 24px 32px;
+  border-bottom: 1px solid rgba(74, 158, 255, 0.1);
+}
+
+.header h1 {
+  font-size: 2rem;
+  font-weight: 700;
+  color: #ffffff;
+  letter-spacing: -0.02em;
+  margin-bottom: 8px;
+}
+
+.header .tagline {
+  font-size: 1.05rem;
+  color: #8a8a9a;
+  font-weight: 400;
+}
+
+/* ===== Tabs ===== */
+.tabs {
+  display: flex;
+  justify-content: center;
+  gap: 4px;
+  padding: 16px 24px 0;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+}
+
+.tab-btn {
+  background: none;
+  border: none;
+  color: #6a6a7a;
+  font-family: inherit;
+  font-size: 0.95rem;
+  font-weight: 500;
+  padding: 12px 24px;
+  cursor: pointer;
+  border-bottom: 2px solid transparent;
+  transition: color 0.2s, border-color 0.2s;
+}
+
+.tab-btn:hover {
+  color: #b0b0c0;
+}
+
+.tab-btn.active {
+  color: #4a9eff;
+  border-bottom-color: #4a9eff;
+}
+
+/* ===== Tab Content ===== */
+.tab-content {
+  max-width: 1100px;
+  margin: 0 auto;
+  padding: 32px 24px 64px;
+}
+
+.tab-pane {
+  display: none;
+}
+
+.tab-pane.active {
+  display: block;
+}
+
+/* ===== Search Bar ===== */
+.search-bar {
+  display: flex;
+  gap: 12px;
+  max-width: 640px;
+  margin: 0 auto 32px;
+}
+
+.search-bar input {
+  flex: 1;
+  padding: 12px 18px;
+  background: #12121a;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 8px;
+  color: #e0e0e8;
+  font-family: inherit;
+  font-size: 0.95rem;
+  outline: none;
+  transition: border-color 0.2s;
+}
+
+.search-bar input::placeholder {
+  color: #555568;
+}
+
+.search-bar input:focus {
+  border-color: #4a9eff;
+}
+
+.search-bar button {
+  padding: 12px 28px;
+  background: #4a9eff;
+  color: #fff;
+  border: none;
+  border-radius: 8px;
+  font-family: inherit;
+  font-size: 0.95rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background 0.2s;
+  white-space: nowrap;
+}
+
+.search-bar button:hover {
+  background: #3a8bee;
+}
+
+.search-bar button:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+/* ===== Topic Pills ===== */
+.topic-pills {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-bottom: 28px;
+  justify-content: center;
+}
+
+.topic-pill {
+  padding: 7px 16px;
+  border: 1px solid rgba(74, 158, 255, 0.25);
+  border-radius: 20px;
+  background: rgba(74, 158, 255, 0.06);
+  color: #8ab4e8;
+  font-family: inherit;
+  font-size: 0.82rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.topic-pill:hover {
+  background: rgba(74, 158, 255, 0.14);
+  border-color: rgba(74, 158, 255, 0.4);
+  color: #a8ccf5;
+}
+
+.topic-pill.active {
+  background: #4a9eff;
+  border-color: #4a9eff;
+  color: #fff;
+}
+
+/* ===== Loading Spinner ===== */
+.loading {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 16px;
+  padding: 48px 0;
+  color: #6a6a7a;
+  font-size: 0.95rem;
+}
+
+.spinner {
+  width: 36px;
+  height: 36px;
+  border: 3px solid rgba(74, 158, 255, 0.15);
+  border-top-color: #4a9eff;
+  border-radius: 50%;
+  animation: spin 0.8s linear infinite;
+}
+
+@keyframes spin {
+  to { transform: rotate(360deg); }
+}
+
+/* ===== Empty / Error State ===== */
+.empty-state {
+  text-align: center;
+  padding: 48px 0;
+  color: #555568;
+  font-size: 0.95rem;
+}
+
+.error-msg {
+  text-align: center;
+  padding: 24px;
+  margin: 16px 0;
+  background: rgba(239, 68, 68, 0.08);
+  border: 1px solid rgba(239, 68, 68, 0.2);
+  border-radius: 10px;
+  color: #f87171;
+  font-size: 0.95rem;
+}
+
+/* ===== Score Badge ===== */
+.score-badge {
+  display: inline-block;
+  padding: 3px 12px;
+  border-radius: 12px;
+  font-size: 0.8rem;
+  font-weight: 700;
+  letter-spacing: 0.02em;
+}
+
+.score-green {
+  background: rgba(34, 197, 94, 0.15);
+  color: #4ade80;
+  border: 1px solid rgba(34, 197, 94, 0.25);
+}
+
+.score-yellow {
+  background: rgba(245, 158, 11, 0.15);
+  color: #fbbf24;
+  border: 1px solid rgba(245, 158, 11, 0.25);
+}
+
+.score-red {
+  background: rgba(239, 68, 68, 0.15);
+  color: #f87171;
+  border: 1px solid rgba(239, 68, 68, 0.25);
+}
+
+/* ===== Researcher Card (Full — Profile Tab) ===== */
+.card-full {
+  background: #111118;
+  border: 1px solid rgba(255, 255, 255, 0.06);
+  border-radius: 14px;
+  padding: 32px;
+  max-width: 720px;
+  margin: 0 auto;
+}
+
+.card-full .researcher-name {
+  font-size: 1.6rem;
+  font-weight: 700;
+  color: #fff;
+  margin-bottom: 12px;
+}
+
+.stats-row {
+  display: flex;
+  gap: 24px;
+  flex-wrap: wrap;
+  align-items: center;
+  margin-bottom: 16px;
+}
+
+.stat {
+  font-size: 0.88rem;
+  color: #8a8a9a;
+}
+
+.stat strong {
+  color: #c8c8d8;
+  font-weight: 600;
+}
+
+.card-full .summary {
+  color: #b0b0c0;
+  font-size: 0.95rem;
+  line-height: 1.7;
+  margin: 20px 0;
+}
+
+.callout {
+  background: rgba(74, 158, 255, 0.05);
+  border-left: 3px solid #4a9eff;
+  padding: 16px 20px;
+  border-radius: 0 8px 8px 0;
+  margin: 20px 0;
+  color: #a0b8d8;
+  font-size: 0.93rem;
+  line-height: 1.7;
+}
+
+.callout-label {
+  font-size: 0.78rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: #4a9eff;
+  margin-bottom: 6px;
+}
+
+.themes {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin: 20px 0;
+}
+
+.theme-tag {
+  padding: 4px 12px;
+  background: rgba(255, 255, 255, 0.04);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 14px;
+  font-size: 0.78rem;
+  color: #9090a8;
+}
+
+.papers-section h3 {
+  font-size: 0.95rem;
+  font-weight: 600;
+  color: #c0c0d0;
+  margin-bottom: 12px;
+}
+
+.paper-item {
+  padding: 12px 0;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.04);
+}
+
+.paper-item:last-child {
+  border-bottom: none;
+}
+
+.paper-title {
+  font-size: 0.9rem;
+  color: #d0d0e0;
+  font-weight: 500;
+  margin-bottom: 4px;
+}
+
+.paper-title a {
+  color: #d0d0e0;
+}
+
+.paper-title a:hover {
+  color: #4a9eff;
+}
+
+.paper-meta {
+  font-size: 0.8rem;
+  color: #6a6a7a;
+}
+
+.profile-link {
+  display: inline-block;
+  margin-top: 24px;
+  font-size: 0.88rem;
+  color: #4a9eff;
+}
+
+/* ===== Researcher Card (Compact — Discover/PhD) ===== */
+.cards-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(340px, 1fr));
+  gap: 16px;
+}
+
+.card-compact {
+  background: #111118;
+  border: 1px solid rgba(255, 255, 255, 0.06);
+  border-radius: 12px;
+  padding: 22px 24px;
+  transition: transform 0.15s, border-color 0.2s;
+}
+
+.card-compact:hover {
+  transform: translateY(-2px);
+  border-color: rgba(74, 158, 255, 0.18);
+}
+
+.card-compact .researcher-name {
+  font-size: 1.1rem;
+  font-weight: 600;
+  color: #fff;
+  margin-bottom: 8px;
+}
+
+.card-compact .stats-row {
+  margin-bottom: 12px;
+  gap: 16px;
+}
+
+.card-compact .top-paper {
+  font-size: 0.84rem;
+  color: #8a8a9a;
+  margin-top: 10px;
+  line-height: 1.5;
+}
+
+.card-compact .top-paper strong {
+  color: #999ab0;
+  font-weight: 500;
+}
+
+.card-compact .themes {
+  margin: 12px 0 0;
+}
+
+/* ===== PhD Pipeline Cards (List) ===== */
+.cards-list {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.card-ranked {
+  background: #111118;
+  border: 1px solid rgba(255, 255, 255, 0.06);
+  border-radius: 12px;
+  padding: 20px 24px;
+  display: flex;
+  gap: 20px;
+  align-items: flex-start;
+  transition: transform 0.15s, border-color 0.2s;
+}
+
+.card-ranked:hover {
+  transform: translateY(-1px);
+  border-color: rgba(74, 158, 255, 0.18);
+}
+
+.rank-number {
+  font-size: 1.5rem;
+  font-weight: 700;
+  color: rgba(74, 158, 255, 0.35);
+  min-width: 40px;
+  text-align: center;
+  padding-top: 2px;
+}
+
+.card-ranked-body {
+  flex: 1;
+  min-width: 0;
+}
+
+.card-ranked-body .researcher-name {
+  font-size: 1.05rem;
+  font-weight: 600;
+  color: #fff;
+  margin-bottom: 8px;
+}
+
+.card-ranked-body .top-paper {
+  font-size: 0.84rem;
+  color: #8a8a9a;
+  margin-top: 8px;
+  line-height: 1.5;
+}
+
+.card-ranked-body .top-paper strong {
+  color: #999ab0;
+  font-weight: 500;
+}
+
+.card-ranked-body .profile-link {
+  margin-top: 10px;
+  font-size: 0.82rem;
+}
+
+/* ===== Responsive ===== */
+@media (max-width: 768px) {
+  .header h1 {
+    font-size: 1.5rem;
+  }
+  .header .tagline {
+    font-size: 0.92rem;
+  }
+  .tabs {
+    gap: 0;
+  }
+  .tab-btn {
+    padding: 10px 14px;
+    font-size: 0.85rem;
+  }
+  .tab-content {
+    padding: 24px 16px 48px;
+  }
+  .card-full {
+    padding: 24px 20px;
+  }
+  .cards-grid {
+    grid-template-columns: 1fr;
+  }
+  .search-bar {
+    flex-direction: column;
+  }
+  .search-bar button {
+    width: 100%;
+  }
+  .card-ranked {
+    flex-direction: column;
+    gap: 8px;
+  }
+  .rank-number {
+    font-size: 1.1rem;
+  }
+}
+</style>
+</head>
+<body>
+
+<header class="header">
+  <h1>World Models Research Radar</h1>
+  <p class="tagline">Discover researchers shaping physical world models</p>
+</header>
+
+<nav class="tabs">
+  <button class="tab-btn active" data-tab="profile">Researcher Profile</button>
+  <button class="tab-btn" data-tab="discover">Discover</button>
+  <button class="tab-btn" data-tab="phd">PhD Pipeline</button>
+</nav>
+
+<div class="tab-content">
+
+  <!-- TAB 1: Researcher Profile -->
+  <div id="tab-profile" class="tab-pane active">
+    <div class="search-bar">
+      <input type="text" id="search-input" placeholder="Search by researcher name or arXiv paper ID...">
+      <button id="search-btn">Search</button>
+    </div>
+    <div id="profile-results"></div>
+  </div>
+
+  <!-- TAB 2: Discover -->
+  <div id="tab-discover" class="tab-pane">
+    <div id="discover-pills" class="topic-pills"></div>
+    <div id="discover-results"></div>
+  </div>
+
+  <!-- TAB 3: PhD Pipeline -->
+  <div id="tab-phd" class="tab-pane">
+    <div id="phd-pills" class="topic-pills"></div>
+    <div id="phd-results">
+      <div class="empty-state">Select a topic to discover emerging researchers</div>
+    </div>
+  </div>
+
+</div>
+
+<script>
+/* ===== Constants ===== */
+const TOPICS = [
+  'Physical World Models',
+  'Neural Radiance Fields (NeRF)',
+  '3D Gaussian Splatting',
+  'Spatial Foundation Models',
+  'Novel View Synthesis',
+  '4D Neural Representations',
+  'Physics-Based Simulation',
+  'Embodied AI',
+  'Scene Understanding',
+  'Generative 3D Models',
+  'Robot Learning',
+  'Digital Twins'
+];
+
+/* ===== State ===== */
+let discoverLoaded = false;
+let discoverActiveTopic = null;
+let phdActiveTopic = null;
+
+/* ===== Tab Switching ===== */
+const tabBtns = document.querySelectorAll('.tab-btn');
+const tabPanes = document.querySelectorAll('.tab-pane');
+
+tabBtns.forEach(btn => {
+  btn.addEventListener('click', () => {
+    const tab = btn.dataset.tab;
+
+    tabBtns.forEach(b => b.classList.remove('active'));
+    btn.classList.add('active');
+
+    tabPanes.forEach(p => p.classList.remove('active'));
+    document.getElementById('tab-' + tab).classList.add('active');
+
+    if (tab === 'discover' && !discoverLoaded) {
+      discoverLoaded = true;
+      loadPreseeded();
+    }
+  });
+});
+
+/* ===== Utility: Score Badge ===== */
+function scoreBadgeHTML(score) {
+  if (score == null) return '';
+  const s = Number(score);
+  let cls = 'score-red';
+  if (s >= 70) cls = 'score-green';
+  else if (s >= 40) cls = 'score-yellow';
+  return '<span class="score-badge ' + cls + '">Relevance: ' + s + '</span>';
+}
+
+/* ===== Utility: Theme Tags ===== */
+function themesHTML(themes) {
+  if (!themes || !themes.length) return '';
+  return '<div class="themes">' +
+    themes.map(t => '<span class="theme-tag">' + esc(t) + '</span>').join('') +
+    '</div>';
+}
+
+/* ===== Utility: Escape HTML ===== */
+function esc(str) {
+  if (!str) return '';
+  const d = document.createElement('div');
+  d.textContent = str;
+  return d.innerHTML;
+}
+
+/* ===== Utility: Loading HTML ===== */
+function loadingHTML(msg) {
+  return '<div class="loading"><div class="spinner"></div>' +
+    (msg ? '<div>' + esc(msg) + '</div>' : '') +
+    '</div>';
+}
+
+/* ===== Utility: Error HTML ===== */
+function errorHTML(msg) {
+  return '<div class="error-msg">' + esc(msg || 'Something went wrong. Please try again.') + '</div>';
+}
+
+/* ===== Render: Full Researcher Card (Profile Tab) ===== */
+function renderFullCard(r) {
+  let papersHTML = '';
+  const papers = r.topPapers || [];
+  if (papers.length) {
+    papersHTML = '<div class="papers-section"><h3>Top Papers</h3>' +
+      papers.map(p => {
+        const link = p.arxivUrl
+          ? '<a href="' + esc(p.arxivUrl) + '" target="_blank" rel="noopener">' + esc(p.title) + '</a>'
+          : esc(p.title);
+        const meta = [p.year, p.citations != null ? p.citations + ' citations' : null]
+          .filter(Boolean).join(' &middot; ');
+        return '<div class="paper-item"><div class="paper-title">' + link + '</div>' +
+          (meta ? '<div class="paper-meta">' + meta + '</div>' : '') + '</div>';
+      }).join('') + '</div>';
+  }
+
+  const profileUrl = r.semanticScholarUrl;
+  const profileLink = profileUrl
+    ? '<a class="profile-link" href="' + esc(profileUrl) + '" target="_blank" rel="noopener">View on Semantic Scholar &rarr;</a>'
+    : '';
+
+  return '<div class="card-full">' +
+    '<div class="researcher-name">' + esc(r.name) + '</div>' +
+    '<div class="stats-row">' +
+      '<span class="stat"><strong>' + (r.citations != null ? r.citations.toLocaleString() : '—') + '</strong> Citations</span>' +
+      '<span class="stat"><strong>' + (r.hIndex != null ? r.hIndex : '—') + '</strong> h-index</span>' +
+      '<span class="stat"><strong>' + (r.paperCount != null ? r.paperCount : '—') + '</strong> Papers</span>' +
+      scoreBadgeHTML(r.relevanceScore) +
+    '</div>' +
+    (r.researchSummary ? '<p class="summary">' + esc(r.researchSummary) + '</p>' : '') +
+    (r.whyMatters ? '<div class="callout"><div class="callout-label">Why this researcher matters</div>' + esc(r.whyMatters) + '</div>' : '') +
+    themesHTML(r.themes) +
+    papersHTML +
+    profileLink +
+    '</div>';
+}
+
+/* ===== Render: Compact Card (Discover Tab) ===== */
+function renderCompactCard(r) {
+  const tp = r.topPaper || (r.topPapers && r.topPapers[0]);
+  const topPaper = tp
+    ? '<div class="top-paper"><strong>Top paper:</strong> ' + esc(tp.title) + '</div>'
+    : '';
+
+  return '<div class="card-compact">' +
+    '<div class="researcher-name">' + esc(r.name) + '</div>' +
+    '<div class="stats-row">' +
+      '<span class="stat"><strong>' + (r.citations != null ? r.citations.toLocaleString() : '—') + '</strong> Citations</span>' +
+      '<span class="stat"><strong>' + (r.hIndex != null ? r.hIndex : '—') + '</strong> h-index</span>' +
+      scoreBadgeHTML(r.relevanceScore) +
+    '</div>' +
+    topPaper +
+    themesHTML(r.themes) +
+    '</div>';
+}
+
+/* ===== Render: Ranked Card (PhD Pipeline Tab) ===== */
+function renderRankedCard(r, rank) {
+  const tp = r.topPaper || (r.topPapers && r.topPapers[0]);
+  const topPaper = tp
+    ? '<div class="top-paper"><strong>Top paper:</strong> ' + esc(tp.title) + '</div>'
+    : '';
+
+  const profileUrl = r.semanticScholarUrl;
+  const profileLink = profileUrl
+    ? '<a class="profile-link" href="' + esc(profileUrl) + '" target="_blank" rel="noopener">Semantic Scholar &rarr;</a>'
+    : '';
+
+  return '<div class="card-ranked">' +
+    '<div class="rank-number">#' + rank + '</div>' +
+    '<div class="card-ranked-body">' +
+      '<div class="researcher-name">' + esc(r.name) + '</div>' +
+      '<div class="stats-row">' +
+        '<span class="stat"><strong>' + (r.citations != null ? r.citations.toLocaleString() : '—') + '</strong> Citations</span>' +
+        '<span class="stat"><strong>' + (r.hIndex != null ? r.hIndex : '—') + '</strong> h-index</span>' +
+        scoreBadgeHTML(r.relevanceScore) +
+      '</div>' +
+      topPaper +
+      profileLink +
+    '</div>' +
+    '</div>';
+}
+
+/* ===== Render: Topic Pills ===== */
+function renderTopicPills(containerId, activeTopic, onClick) {
+  const container = document.getElementById(containerId);
+  container.innerHTML = TOPICS.map(t => {
+    const cls = t === activeTopic ? 'topic-pill active' : 'topic-pill';
+    return '<button class="' + cls + '" data-topic="' + esc(t) + '">' + esc(t) + '</button>';
+  }).join('');
+
+  container.querySelectorAll('.topic-pill').forEach(pill => {
+    pill.addEventListener('click', () => onClick(pill.dataset.topic));
+  });
+}
+
+/* ===== API Helpers ===== */
+async function apiPost(url, body) {
+  const res = await fetch(url, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(body)
+  });
+  if (!res.ok) {
+    const text = await res.text().catch(() => '');
+    throw new Error(text || 'Request failed (' + res.status + ')');
+  }
+  return res.json();
+}
+
+async function apiGet(url) {
+  const res = await fetch(url);
+  if (!res.ok) {
+    const text = await res.text().catch(() => '');
+    throw new Error(text || 'Request failed (' + res.status + ')');
+  }
+  return res.json();
+}
+
+/* ===== Tab 1: Researcher Profile ===== */
+const searchInput = document.getElementById('search-input');
+const searchBtn = document.getElementById('search-btn');
+const profileResults = document.getElementById('profile-results');
+
+async function searchResearcher() {
+  const query = searchInput.value.trim();
+  if (!query) return;
+
+  searchBtn.disabled = true;
+  profileResults.innerHTML = loadingHTML('Searching...');
+
+  try {
+    const researcher = await apiPost('/api/researcher', { query: query });
+    profileResults.innerHTML = renderFullCard(researcher);
+  } catch (err) {
+    profileResults.innerHTML = errorHTML(err.message);
+  } finally {
+    searchBtn.disabled = false;
+  }
+}
+
+searchBtn.addEventListener('click', searchResearcher);
+searchInput.addEventListener('keydown', e => {
+  if (e.key === 'Enter') searchResearcher();
+});
+
+/* ===== Tab 2: Discover ===== */
+const discoverResults = document.getElementById('discover-results');
+
+async function loadPreseeded() {
+  discoverResults.innerHTML = loadingHTML('Loading researchers...');
+  try {
+    const researchers = await apiGet('/api/preseeded');
+    if (!researchers.length) {
+      discoverResults.innerHTML = '<div class="empty-state">No researchers found.</div>';
+      return;
+    }
+    discoverResults.innerHTML = '<div class="cards-grid">' +
+      researchers.map(r => renderCompactCard(r)).join('') + '</div>';
+  } catch (err) {
+    discoverResults.innerHTML = errorHTML(err.message);
+  }
+}
+
+async function discoverByTopic(topic) {
+  discoverActiveTopic = topic;
+  renderTopicPills('discover-pills', discoverActiveTopic, discoverByTopic);
+  discoverResults.innerHTML = loadingHTML('Discovering researchers...');
+
+  try {
+    const researchers = await apiPost('/api/discover', { topic: topic });
+    if (!researchers.length) {
+      discoverResults.innerHTML = '<div class="empty-state">No researchers found for this topic.</div>';
+      return;
+    }
+    discoverResults.innerHTML = '<div class="cards-grid">' +
+      researchers.map(r => renderCompactCard(r)).join('') + '</div>';
+  } catch (err) {
+    discoverResults.innerHTML = errorHTML(err.message);
+  }
+}
+
+renderTopicPills('discover-pills', discoverActiveTopic, discoverByTopic);
+
+/* ===== Tab 3: PhD Pipeline ===== */
+const phdResults = document.getElementById('phd-results');
+
+async function phdByTopic(topic) {
+  phdActiveTopic = topic;
+  renderTopicPills('phd-pills', phdActiveTopic, phdByTopic);
+  phdResults.innerHTML = loadingHTML('Searching arXiv and enriching profiles... this may take a minute');
+
+  try {
+    const researchers = await apiPost('/api/phd-pipeline', { topic: topic });
+    if (!researchers.length) {
+      phdResults.innerHTML = '<div class="empty-state">No emerging researchers found for this topic.</div>';
+      return;
+    }
+    phdResults.innerHTML = '<div class="cards-list">' +
+      researchers.map((r, i) => renderRankedCard(r, i + 1)).join('') + '</div>';
+  } catch (err) {
+    phdResults.innerHTML = errorHTML(err.message);
+  }
+}
+
+renderTopicPills('phd-pills', phdActiveTopic, phdByTopic);
+</script>
+
+</body>
+</html>
