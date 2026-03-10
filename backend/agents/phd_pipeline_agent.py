@@ -138,10 +138,10 @@ def _build_light_profile(author_data: Dict[str, Any]) -> Dict[str, Any]:
 async def find_emerging_researchers(topic: str) -> List[Dict[str, Any]]:
     """Find emerging (low-citation) researchers working on a topic."""
 
-    async with httpx.AsyncClient() as client:
+    async with httpx.AsyncClient(follow_redirects=True) as client:
         # 1. Search arXiv for very recent papers
         arxiv_url = (
-            f"http://export.arxiv.org/api/query?"
+            f"https://export.arxiv.org/api/query?"
             f'search_query=all:"{topic}"+AND+'
             f"(cat:cs.CV+OR+cat:cs.LG+OR+cat:cs.AI+OR+cat:cs.GR+OR+cat:cs.RO)"
             f"&max_results=30&sortBy=submittedDate"

@@ -252,11 +252,11 @@ async def lookup_researcher(query: str) -> Dict[str, Any]:
     query = query.strip()
     arxiv_match = _ARXIV_ID_PATTERN.match(query)
 
-    async with httpx.AsyncClient() as client:
+    async with httpx.AsyncClient(follow_redirects=True) as client:
         if arxiv_match:
             # ------- arXiv ID path -------
             arxiv_id = arxiv_match.group(1)
-            arxiv_url = f"http://export.arxiv.org/api/query?id_list={arxiv_id}"
+            arxiv_url = f"https://export.arxiv.org/api/query?id_list={arxiv_id}"
             resp = await client.get(arxiv_url, timeout=30.0)
             resp.raise_for_status()
             entries = _parse_arxiv_entries(resp.text)
@@ -270,7 +270,7 @@ async def lookup_researcher(query: str) -> Dict[str, Any]:
         # -- Name disambiguation --
         folded_name = _fold_unicode(primary_author)
         arxiv_search_url = (
-            f"http://export.arxiv.org/api/query?"
+            f"https://export.arxiv.org/api/query?"
             f'search_query=au:"{folded_name}"+AND+'
             f"(cat:cs.CV+OR+cat:cs.LG+OR+cat:cs.AI+OR+cat:cs.GR+OR+cat:cs.RO)"
             f"&max_results=5&sortBy=relevance"

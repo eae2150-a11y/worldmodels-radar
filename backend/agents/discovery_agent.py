@@ -138,10 +138,10 @@ def _build_light_profile(author_data: Dict[str, Any]) -> Dict[str, Any]:
 async def discover_by_topic(topic: str) -> List[Dict[str, Any]]:
     """Find researchers working on a given topic via arXiv + Semantic Scholar."""
 
-    async with httpx.AsyncClient() as client:
+    async with httpx.AsyncClient(follow_redirects=True) as client:
         # 1. Search arXiv
         arxiv_url = (
-            f"http://export.arxiv.org/api/query?"
+            f"https://export.arxiv.org/api/query?"
             f'search_query=all:"{topic}"+AND+'
             f"(cat:cs.CV+OR+cat:cs.LG+OR+cat:cs.AI+OR+cat:cs.GR+OR+cat:cs.RO)"
             f"&max_results=20&sortBy=submittedDate"
