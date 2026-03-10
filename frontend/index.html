@@ -549,14 +549,16 @@ a:hover {
   <!-- TAB 2: Discover -->
   <div id="tab-discover" class="tab-pane">
     <div id="discover-pills" class="topic-pills"></div>
-    <div id="discover-results"></div>
+    <div id="discover-results">
+      <div class="empty-state">Select a topic above to discover researchers</div>
+    </div>
   </div>
 
   <!-- TAB 3: PhD Pipeline -->
   <div id="tab-phd" class="tab-pane">
     <div id="phd-pills" class="topic-pills"></div>
     <div id="phd-results">
-      <div class="empty-state">Select a topic to discover emerging researchers</div>
+      <div class="empty-state">Select a topic above to find PhD researchers</div>
     </div>
   </div>
 
@@ -580,7 +582,6 @@ const TOPICS = [
 ];
 
 /* ===== State ===== */
-let discoverLoaded = false;
 let discoverActiveTopic = null;
 let phdActiveTopic = null;
 
@@ -597,11 +598,6 @@ tabBtns.forEach(btn => {
 
     tabPanes.forEach(p => p.classList.remove('active'));
     document.getElementById('tab-' + tab).classList.add('active');
-
-    if (tab === 'discover' && !discoverLoaded) {
-      discoverLoaded = true;
-      loadPreseeded();
-    }
   });
 });
 
